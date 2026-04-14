@@ -19,8 +19,9 @@ const UC_TEST = (() => {
   };
 
   const assertThrows = async (fn, msg) => {
-    try { await fn(); throw new Error('Aucune erreur levée'); }
-    catch (e) { if (e.message === 'Aucune erreur levée') throw new Error(msg ?? e.message); }
+    let threw = false;
+    try { await fn(); } catch { threw = true; }
+    if (!threw) throw new Error(msg ?? 'Attendu une erreur, aucune levée');
   };
 
   const run = async () => {

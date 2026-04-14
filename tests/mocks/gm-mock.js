@@ -5,7 +5,11 @@ const GM = {
   getValue: (key, defaultValue = null) =>
     Promise.resolve(key in _gm_store ? _gm_store[key] : defaultValue),
   setValue: (key, value) => {
-    _gm_store[key] = value;
+    if (value === null || value === undefined) {
+      delete _gm_store[key];
+    } else {
+      _gm_store[key] = value;
+    }
     return Promise.resolve();
   },
   _reset: () => { Object.keys(_gm_store).forEach(k => delete _gm_store[k]); },
