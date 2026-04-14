@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Unified Cart TM — Tests</title>
+  <style>
+    body { font-family: monospace; background: #1e1e2e; color: #cdd6f4; padding: 1rem; }
+    #uc-summary { font-size: 1.2em; margin: 1rem 0; padding: .5rem; background: #313244; border-radius: 4px; }
+    .pass { color: #a6e3a1; }
+    .fail { color: #f38ba8; font-weight: bold; }
+    h2 { color: #89b4fa; border-bottom: 1px solid #313244; padding-bottom: .25rem; margin-top: 1.5rem; }
+  </style>
+</head>
+<body>
+  <h1>🧪 Unified Cart TM — Tests</h1>
+  <div id="uc-summary">Chargement...</div>
+  <div id="uc-results"></div>
+
+  <!-- Mocks -->
+  <script src="mocks/gm-mock.js"></script>
+  <!-- Modules -->
+  <script src="../uc-constants.js"></script>
+  <script src="../uc-storage.js"></script>
+  <script src="../uc-price-history.js"></script>
+  <script src="../uc-cart-manager.js"></script>
+  <script src="../uc-watchlist.js"></script>
+  <script src="../uc-cart-page.js"></script>
+  <script src="../uc-generic.js"></script>
+  <script src="../uc-amazon.js"></script>
+  <script src="../uc-utils.js"></script>
+  <script src="../uc-ui-styles.js"></script>
+  <script src="../uc-ui-toast.js"></script>
+  <script src="../uc-ui-item.js"></script>
+  <script src="../uc-ui-list.js"></script>
+  <script src="../uc-ui.js"></script>
+  <!-- Test runner -->
+  <script src="test-runner.js"></script>
+  <!-- Tests -->
+  <script src="uc-storage.test.js"></script>
+  <script src="uc-price-history.test.js"></script>
+  <script src="uc-cart-manager.test.js"></script>
+  <script src="uc-watchlist.test.js"></script>
+  <script src="uc-cart-page.test.js"></script>
+  <script src="uc-amazon.test.js"></script>
+  <script src="uc-generic.test.js"></script>
+  <script src="uc-ui.test.js"></script>
+  <script>UC_TEST.run();</script>
+</body>
+</html>
