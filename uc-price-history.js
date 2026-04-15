@@ -10,6 +10,7 @@ const UCPriceHistoryEngine = (() => {
   const pricesEqual = (a, b) => Math.abs(a - b) < TOLERANCE;
 
   const append = (item, newPrice) => {
+    if (typeof newPrice !== 'number' || !isFinite(newPrice)) return item;
     const history = item.priceHistory ?? [];
     const last = history[history.length - 1];
     if (last && pricesEqual(last.price, newPrice)) return item;
@@ -32,7 +33,7 @@ const UCPriceHistoryEngine = (() => {
     if (h.length < 2) return null;
     const first = h[0].price, last = h[h.length - 1].price;
     if (pricesEqual(first, last)) return '→ Stable';
-    const pct = Math.round(Math.abs((last - first) / first) * 100);
+    const pct = first === 0 ? 100 : Math.round(Math.abs((last - first) / first) * 100);
     return last < first ? `↓ -${pct}%` : `↑ +${pct}%`;
   };
 
