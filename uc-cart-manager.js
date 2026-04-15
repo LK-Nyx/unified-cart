@@ -28,12 +28,14 @@ const UCCartManager = (() => {
       const all = carts ?? {};
       const existing = all[domain] ?? { items: [], lastUpdated: 0 };
       const itemMap = new Map(existing.items.map(i => [i.id, i]));
+      let validCount = 0;
 
       for (const incoming of incomingItems) {
         if (!incoming.name || incoming.price == null) {
           console.warn(LOG, 'Article ignoré (nom ou prix manquant)', incoming);
           continue;
         }
+        validCount++;
         const id = incoming.id ?? makeItemId(incoming.url, incoming.name);
         if (itemMap.has(id)) {
           const current = itemMap.get(id);
@@ -56,6 +58,7 @@ const UCCartManager = (() => {
         }
       }
 
+      if (validCount === 0 && !all[domain]) return all;
       return { ...all, [domain]: { items: [...itemMap.values()], lastUpdated: Date.now() } };
     });
   };
