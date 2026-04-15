@@ -94,10 +94,10 @@
 
     if (watchedPages[url]) {
       console.log(LOG, 'URL dans watchlist → scan auto');
-      scan();
+      scan().catch(e => console.error(LOG, 'Échec scan auto', e));
     } else if (UCCartPageDetector.isCartPage()) {
       console.log(LOG, 'Page panier détectée → scan auto');
-      scan();
+      scan().catch(e => console.error(LOG, 'Échec scan auto', e));
     } else {
       console.log(LOG, 'Page ignorée (pas un panier, pas dans watchlist)');
     }
