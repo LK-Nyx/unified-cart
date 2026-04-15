@@ -10,7 +10,7 @@ const UCUIToast = (() => {
    * @param {number} duration ms (défaut 2000)
    */
   const show = (shadowRoot, message, type = 'info', duration = 2000) => {
-    let container = shadowRoot.getElementById('uc-toast-container');
+    let container = shadowRoot.querySelector('#uc-toast-container');
     if (!container) {
       container = document.createElement('div');
       container.id = 'uc-toast-container';
