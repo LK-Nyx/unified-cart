@@ -53,3 +53,9 @@ UC_TEST.it('price-history: trendLabel() formate ↓ -N%', () => {
   UC_TEST.assert(label.startsWith('↓'), `attendu ↓, obtenu: ${label}`);
   UC_TEST.assert(label.includes('%'), `attendu %, obtenu: ${label}`);
 });
+
+UC_TEST.it('price-history: trendLabel() gère first=0 sans NaN', () => {
+  const item = makeItem(10, [{ price: 0, seenAt: 1 }, { price: 10, seenAt: 2 }]);
+  const label = UCPriceHistoryEngine.trendLabel(item);
+  UC_TEST.assert(!label.includes('NaN') && !label.includes('Infinity'), `label ne doit pas contenir NaN/Infinity : ${label}`);
+});
