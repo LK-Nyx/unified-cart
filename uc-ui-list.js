@@ -1,0 +1,82 @@
+// @module uc-ui-list.js
+// [UC:ui] Render d'une section de panier (un domaine) dans la sidebar Shadow DOM.
+// Dépend de : UCUtils, UCUIItem, UCUIToast, UCCartManager, UCUI
+
+const UCUIList = (() => {
+  const LOG = '[UC:ui-list]';
+
+  const renderSection = (domain, cart, shadowRoot) => {
+    const total = cart.items.reduce((s, i) => s + ((i.price ?? 0) * (i.quantity ?? 1)), 0);
+    const currency = cart.items[0]?.currency ?? '€';
+    const lastUpdated = cart.lastUpdated
+      ? new Date(cart.lastUpdated).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+      : '—';
+
+    const section = document.createElement('div');
+    section.className = 'uc-cart-section';
+    section.dataset.domain = domain;
+
+    section.innerHTML = `
+      <div class="uc-cart-section__header" role="button" tabindex="0" aria-expanded="false">
+        <span class="uc-cart-section__toggle" aria-hidden="true">▶</span>
+        <span class="uc-cart-section__domain">${UCUtils.esc(domain)}</span>
+        <span class="uc-cart-section__count">${cart.items.length} article${cart.items.length > 1 ? 's' : ''}</span>
+        <span class="uc-cart-section__total">${UCUtils.esc(currency)}${total.toFixed(2)}</span>
+      </div>
+      <div class="uc-cart-section__items" hidden></div>
+      <div class="uc-cart-section__footer" hidden>
+        <button class="uc-btn uc-btn--danger uc-btn--clear">Vider ce panier</button>
+        <span class="uc-cart-section__updated">${UCUtils.esc(lastUpdated)}</span>
+      </div>
+    `;
+
+    const header = section.querySelector('.uc-cart-section__header');
+    const itemsContainer = section.querySelector('.uc-cart-section__items');
+    const footer = section.querySelector('.uc-cart-section__footer');
+    const toggle = section.querySelector('.uc-cart-section__toggle');
+
+    for (const item of cart.items) {
+      itemsContainer.appendChild(UCUIItem.render(item, domain, shadowRoot));
+    }
+
+    const toggleSection = () => {
+      const isExpanded = !itemsContainer.hidden;
+      itemsContainer.hidden = isExpanded;
+      footer.hidden = isExpanded;
+      toggle.textContent = isExpanded ? '▶' : '▼';
+      header.setAttribute('aria-expanded', String(!isExpanded));
+    };
+
+    header.addEventListener('click', toggleSection);
+    header.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection(); }
+    });
+
+    const btnClear = section.querySelector('.uc-btn--clear');
+    let clearPending = false;
+    btnClear.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!clearPending) {
+        clearPending = true;
+        btnClear.textContent = 'Confirmer ?';
+        setTimeout(() => {
+          clearPending = false;
+          btnClear.textContent = 'Vider ce panier';
+        }, 3000);
+        return;
+      }
+      try {
+        await UCCartManager.clearCart(domain);
+        UCUIToast.show(shadowRoot, `Panier ${UCUtils.esc(domain)} vidé`, 'success');
+        UCUI.load();
+      } catch (err) {
+        console.error(LOG, 'clearCart échoué', err);
+        UCUIToast.show(shadowRoot, 'Erreur lors du vidage', 'error');
+      }
+    });
+
+    return section;
+  };
+
+  return { renderSection };
+})();
