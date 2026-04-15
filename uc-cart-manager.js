@@ -18,11 +18,11 @@ const UCCartManager = (() => {
   };
 
   const mergeCart = async (domain, incomingItems) => {
-    if (!domain || !Array.isArray(incomingItems) || incomingItems.length === 0) {
-      if (incomingItems?.length === 0) return;
+    if (!domain || !Array.isArray(incomingItems)) {
       console.warn(LOG, 'mergeCart: arguments invalides', { domain, count: incomingItems?.length });
       return;
     }
+    if (incomingItems.length === 0) return;
 
     await UCStorage.update(UC_KEYS.CARTS, (carts) => {
       const all = carts ?? {};
@@ -58,7 +58,7 @@ const UCCartManager = (() => {
         }
       }
 
-      if (validCount === 0 && !all[domain]) return all;
+      if (validCount === 0) return all;
       return { ...all, [domain]: { items: [...itemMap.values()], lastUpdated: Date.now() } };
     });
   };
@@ -92,5 +92,5 @@ const UCCartManager = (() => {
     return (await UCStorage.get(UC_KEYS.CARTS)) ?? {};
   };
 
-  return { mergeCart, removeItem, clearCart, getAllCarts, makeItemId };
+  return { mergeCart, removeItem, clearCart, getAllCarts };
 })();
