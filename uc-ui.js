@@ -6,10 +6,15 @@ const UCUI = (() => {
   const LOG = '[UC:ui]';
   let _root = null;
   let _shadow = null;
+  let _abortController = null;
 
   // ── Init Shadow DOM ──
   const _init = async () => {
     if (document.getElementById('uc-root')) return;
+
+    if (_abortController) _abortController.abort();
+    _abortController = new AbortController();
+    const signal = _abortController.signal;
 
     _root = document.createElement('div');
     _root.id = 'uc-root';
@@ -107,7 +112,7 @@ const UCUI = (() => {
         fab.style.left = x + 'px';
         fab.style.top = y + 'px';
       }
-    });
+    }, { signal });
 
     document.addEventListener('mouseup', async (e) => {
       if (!_dragging) return;
@@ -119,12 +124,12 @@ const UCUI = (() => {
         const y = parseFloat(fab.style.top);
         await UCStorage.set(UC_KEYS.BTN_POS, { x, y });
       }
-    });
+    }, { signal });
 
     // ── Escape ferme la sidebar ──
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') sidebar.classList.add('uc-sidebar--hidden');
-    });
+    }, { signal });
 
     // ── Bouton côté ──
     _shadow.getElementById('uc-btn-side').addEventListener('click', async () => {
@@ -245,8 +250,8 @@ const UCUI = (() => {
 
   // ── Scanner ──
   const _onScan = async () => {
-    UCUIToast.show(_shadow, 'Scan en cours...', 'info');
     if (typeof window._ucScan === 'function') {
+      UCUIToast.show(_shadow, 'Scan en cours...', 'info');
       await window._ucScan();
     } else {
       UCUIToast.show(_shadow, 'Scanner non disponible', 'error');
