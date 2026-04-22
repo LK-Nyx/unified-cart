@@ -7,20 +7,20 @@
 // @grant        GM.setValue
 // @grant        GM.getValue
 // @grant        GM_openInTab
-// @require      file:///home/lararchfr/code/extensions-tampermonkey/uc-constants.js
-// @require      file:///home/lararchfr/code/extensions-tampermonkey/uc-storage.js
-// @require      file:///home/lararchfr/code/extensions-tampermonkey/uc-price-history.js
-// @require      file:///home/lararchfr/code/extensions-tampermonkey/uc-cart-manager.js
-// @require      file:///home/lararchfr/code/extensions-tampermonkey/uc-watchlist.js
-// @require      file:///home/lararchfr/code/extensions-tampermonkey/uc-cart-page.js
-// @require      file:///home/lararchfr/code/extensions-tampermonkey/uc-generic.js
-// @require      file:///home/lararchfr/code/extensions-tampermonkey/uc-amazon.js
-// @require      file:///home/lararchfr/code/extensions-tampermonkey/uc-utils.js
-// @require      file:///home/lararchfr/code/extensions-tampermonkey/uc-ui-styles.js
-// @require      file:///home/lararchfr/code/extensions-tampermonkey/uc-ui-toast.js
-// @require      file:///home/lararchfr/code/extensions-tampermonkey/uc-ui-item.js
-// @require      file:///home/lararchfr/code/extensions-tampermonkey/uc-ui-list.js
-// @require      file:///home/lararchfr/code/extensions-tampermonkey/uc-ui.js
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-constants.js
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-storage.js
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-price-history.js
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-cart-manager.js
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-watchlist.js
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-cart-page.js
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-generic.js
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-amazon.js
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-utils.js
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-styles.js
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-toast.js
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-item.js
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-list.js
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui.js
 // ==/UserScript==
 
 // @module unified-cart.user.js
