@@ -10,17 +10,37 @@ const UCCartPageDetector = (() => {
     '/cart', '/basket', '/checkout', '/panier', '/bag',
     '/commande', '/order', '/wishlist', '/mon-panier',
     '/purchase', '/buy', '/korb', '/warenkorb',
+    // langues supplémentaires
+    '/carrello', '/cesta', '/winkelwagen', '/afrekenen',
+    '/kurv', '/mand', '/kasse', '/ostoskori', '/varukorg',
+    '/koszyk', '/koszyk', '/cosul', '/sepet', '/kosarica',
+    // patterns génériques
+    '/my-cart', '/my-bag', '/shopping-cart', '/shopping-bag',
+    '/order-summary', '/review-order', '/place-order',
   ];
 
   const TITLE_PATTERNS = [
     'panier', 'cart', 'basket', 'checkout', 'bag',
     'mon panier', 'your cart', 'my bag', 'shopping bag',
+    'order summary', 'review order', 'place order',
+    'carrello', 'cesta', 'winkelwagen', 'warenkorb',
+    'ostoskori', 'varukorg', 'koszyk', 'sepet',
   ];
 
   const DOM_SELECTORS = [
     '[data-cart]', '[data-cart-count]', '.cart-container', '#cart',
     '#shopping-cart', 'form[action*="/cart"]', '[class*="shopping-cart"]',
     '[id*="shopping-cart"]', 'form[action*="/basket"]', '[data-testid*="cart"]',
+    // checkout / order
+    '[class*="checkout"]', '[id*="checkout"]',
+    '[class*="order-summary"]', '[id*="order-summary"]',
+    '[class*="cart-summary"]', '[class*="cart-total"]',
+    '[data-testid*="checkout"]', '[data-module*="cart"]',
+    // boutons caractéristiques
+    'button[class*="checkout"]', 'a[href*="/checkout"]',
+    '[class*="proceed-to"]', '[class*="place-order"]',
+    // quantités + prix = probablement un panier
+    'input[name*="quantity"]',
   ];
 
   const IGNORED_PREFIXES = [
