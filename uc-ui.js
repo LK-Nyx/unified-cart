@@ -18,7 +18,7 @@ const UCUI = (() => {
 
     _root = document.createElement('div');
     _root.id = 'uc-root';
-    _root.style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;pointer-events:none!important;z-index:2147483647!important;overflow:visible!important;';
+    _root.style.cssText = 'display:block!important;position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;pointer-events:none!important;z-index:2147483647!important;overflow:visible!important;';
     document.body.appendChild(_root);
     _shadow = _root.attachShadow({ mode: 'open' });
 
