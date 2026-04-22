@@ -46,6 +46,7 @@ const UCUI = (() => {
           <button id="uc-btn-import" class="uc-btn uc-btn--icon" title="Importer JSON">↑</button>
           <input type="file" id="uc-import-input" accept=".json" style="display:none">
           <button id="uc-btn-side" class="uc-btn uc-btn--icon" title="Changer de côté">◀</button>
+          <button id="uc-btn-close" class="uc-btn uc-btn--icon" title="Fermer">✕</button>
         </div>
       </div>
       <div class="uc-total-bar">Total : <span id="uc-grand-total">—</span></div>
@@ -53,6 +54,7 @@ const UCUI = (() => {
       <div class="uc-footer">
         <button id="uc-btn-scan" class="uc-btn uc-btn--primary">Scanner cette page</button>
         <button id="uc-btn-add-manual" class="uc-btn uc-btn--secondary">Ajouter manuellement</button>
+        <button id="uc-btn-clear-all" class="uc-btn uc-btn--danger" title="Vider tous les paniers">Tout vider</button>
       </div>
       <div id="uc-manual-form" class="uc-manual-form" hidden>
         <p class="uc-manual-form__title">Ajouter un article</p>
@@ -137,6 +139,34 @@ const UCUI = (() => {
       const isLeft = sidebar.classList.toggle('uc-side--left');
       _shadow.getElementById('uc-btn-side').textContent = isLeft ? '▶' : '◀';
       await UCStorage.set(UC_KEYS.SIDE, isLeft ? 'left' : 'right');
+    });
+
+    // ── Fermer ──
+    _shadow.getElementById('uc-btn-close').addEventListener('click', _toggle);
+
+    // ── Tout vider ──
+    let clearAllPending = false;
+    const btnClearAll = _shadow.getElementById('uc-btn-clear-all');
+    btnClearAll.addEventListener('click', async () => {
+      if (!clearAllPending) {
+        clearAllPending = true;
+        btnClearAll.textContent = 'Confirmer ?';
+        setTimeout(() => {
+          clearAllPending = false;
+          btnClearAll.textContent = 'Tout vider';
+        }, 3000);
+        return;
+      }
+      clearAllPending = false;
+      btnClearAll.textContent = 'Tout vider';
+      try {
+        await UCStorage.set(UC_KEYS.CARTS, {});
+        UCUIToast.show(_shadow, 'Tous les paniers vidés', 'success');
+        load();
+      } catch (err) {
+        console.error(LOG, 'clearAll échoué', err);
+        UCUIToast.show(_shadow, 'Erreur lors du vidage', 'error');
+      }
     });
 
     // ── Export ──

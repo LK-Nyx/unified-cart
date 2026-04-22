@@ -189,7 +189,8 @@ const UC_UI_STYLES = `
   flex-shrink: 0;
 }
 
-.uc-footer .uc-btn { flex: 1; }
+.uc-footer .uc-btn--primary,
+.uc-footer .uc-btn--secondary { flex: 1; }
 
 /* ── Manual form ── */
 .uc-manual-form {
