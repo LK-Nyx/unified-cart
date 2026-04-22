@@ -333,8 +333,8 @@ const UCUI = (() => {
     for (const domain of domains.sort()) {
       const cart = carts[domain];
       cartsEl.appendChild(UCUIList.renderSection(domain, cart, _shadow));
-      grandTotal += cart.items.reduce((s, i) => s + ((i.price ?? 0) * (i.quantity ?? 1)), 0);
-      cart.items.forEach(i => { if (i.currency) currencies.add(i.currency); });
+      grandTotal += cart.items.filter(i => i.source === 'cart').reduce((s, i) => s + ((i.price ?? 0) * (i.quantity ?? 1)), 0);
+      cart.items.filter(i => i.source === 'cart').forEach(i => { if (i.currency) currencies.add(i.currency); });
     }
 
     if (currencies.size > 1) {
