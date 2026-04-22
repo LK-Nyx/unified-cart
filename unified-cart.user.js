@@ -60,7 +60,9 @@
     }
 
     if (items.length > 0) {
-      console.log(LOG, `${items.length} article(s) trouvé(s)`);
+      const source = UCCartPageDetector.isCartPage() ? 'cart' : 'browse';
+      items = items.map(item => ({ ...item, source }));
+      console.log(LOG, `${items.length} article(s) trouvé(s) [source: ${source}]`);
       await UCCartManager.mergeCart(domain, items);
       await UCWatchlist.add(url, domain, adapter.name);
       UCUI.load();

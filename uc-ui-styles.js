@@ -112,6 +112,16 @@ const UC_UI_STYLES = `
 
 .uc-cart-section__updated { color: var(--muted); font-size: 11px; }
 
+/* ── Group label ── */
+.uc-items-group__label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  padding: .35rem .75rem .1rem 1.5rem;
+}
+
 /* ── Cart item ── */
 .uc-cart-item {
   padding: .4rem .75rem .4rem 1.5rem;

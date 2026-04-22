@@ -28,6 +28,7 @@ const UCCartManager = (() => {
       const all = carts ?? {};
       const existing = all[domain] ?? { items: [], lastUpdated: 0 };
       const itemMap = new Map(existing.items.map(i => [i.id, i]));
+      const itemNameMap = new Map(existing.items.map(i => [i.name?.toLowerCase().trim(), i.id]));
       let validCount = 0;
 
       for (const incoming of incomingItems) {
@@ -36,15 +37,27 @@ const UCCartManager = (() => {
           continue;
         }
         validCount++;
-        const id = incoming.id ?? makeItemId(incoming.url, incoming.name);
+        let id = incoming.id ?? makeItemId(incoming.url, incoming.name);
+
+        // Dédup par nom si l'ID url-based ne matche pas
+        if (!itemMap.has(id)) {
+          const idByName = itemNameMap.get(incoming.name?.toLowerCase().trim());
+          if (idByName) {
+            console.log(LOG, `Dédup par nom : "${incoming.name}"`);
+            id = idByName;
+          }
+        }
+
         if (itemMap.has(id)) {
           const current = itemMap.get(id);
           const withHistory = UCPriceHistoryEngine.append(current, incoming.price);
+          const source = (current.source === 'cart' || incoming.source === 'cart') ? 'cart' : 'browse';
           itemMap.set(id, {
             ...withHistory,
             price: incoming.price,
             quantity: incoming.quantity ?? current.quantity ?? 1,
             image: incoming.image ?? current.image,
+            source,
             meta: { ...(current.meta ?? {}), ...(incoming.meta ?? {}) },
           });
         } else {
@@ -55,6 +68,7 @@ const UCCartManager = (() => {
             quantity: incoming.quantity ?? 1,
             priceHistory: [{ price: incoming.price, seenAt: Date.now() }],
           });
+          itemNameMap.set(incoming.name?.toLowerCase().trim(), id);
         }
       }
 

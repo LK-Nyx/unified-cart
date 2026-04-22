@@ -35,8 +35,27 @@ const UCUIList = (() => {
     const footer = section.querySelector('.uc-cart-section__footer');
     const toggle = section.querySelector('.uc-cart-section__toggle');
 
-    for (const item of cart.items) {
-      itemsContainer.appendChild(UCUIItem.render(item, domain, shadowRoot));
+    const cartItems   = cart.items.filter(i => i.source === 'cart');
+    const browseItems = cart.items.filter(i => i.source !== 'cart');
+    const hasBoth     = cartItems.length > 0 && browseItems.length > 0;
+
+    const renderGroup = (items, label) => {
+      if (label) {
+        const lbl = document.createElement('div');
+        lbl.className = 'uc-items-group__label';
+        lbl.textContent = label;
+        itemsContainer.appendChild(lbl);
+      }
+      for (const item of items) {
+        itemsContainer.appendChild(UCUIItem.render(item, domain, shadowRoot));
+      }
+    };
+
+    if (hasBoth) {
+      renderGroup(cartItems, 'Panier');
+      renderGroup(browseItems, 'Consultés');
+    } else {
+      renderGroup(cart.items, null);
     }
 
     const toggleSection = () => {
