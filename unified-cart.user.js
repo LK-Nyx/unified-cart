@@ -1,26 +1,26 @@
 // ==UserScript==
 // @name         Unified Cart
 // @namespace    unified-cart
-// @version      1.0.3
+// @version      1.0.4
 // @description  Agrège vos paniers d'achat de tous les sites, 100% local et privé.
 // @match        *://*/*
 // @grant        GM.setValue
 // @grant        GM.getValue
 // @grant        GM_openInTab
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-constants.js?v=1.0.3
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-storage.js?v=1.0.3
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-price-history.js?v=1.0.3
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-cart-manager.js?v=1.0.3
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-watchlist.js?v=1.0.3
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-cart-page.js?v=1.0.3
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-generic.js?v=1.0.3
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-amazon.js?v=1.0.3
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-utils.js?v=1.0.3
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-styles.js?v=1.0.3
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-toast.js?v=1.0.3
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-item.js?v=1.0.3
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-list.js?v=1.0.3
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui.js?v=1.0.3
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-constants.js?v=1.0.4
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-storage.js?v=1.0.4
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-price-history.js?v=1.0.4
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-cart-manager.js?v=1.0.4
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-watchlist.js?v=1.0.4
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-cart-page.js?v=1.0.4
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-generic.js?v=1.0.4
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-amazon.js?v=1.0.4
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-utils.js?v=1.0.4
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-styles.js?v=1.0.4
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-toast.js?v=1.0.4
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-item.js?v=1.0.4
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-list.js?v=1.0.4
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui.js?v=1.0.4
 // ==/UserScript==
 
 // @module unified-cart.user.js
@@ -66,9 +66,11 @@
       await UCCartManager.mergeCart(domain, items);
       await UCWatchlist.add(url, domain, adapter.name);
       UCUI.load();
+      return true;
     } else {
       console.log(LOG, 'Aucun article trouvé sur cette page');
       await UCWatchlist.updateLastScanned(url);
+      return false;
     }
   };
 
@@ -94,12 +96,20 @@
       console.warn(LOG, 'Impossible de récupérer la watchlist', e);
     }
 
+    const scanWithRetry = async (attempt = 1) => {
+      const found = await scan();
+      if (!found && attempt < 4) {
+        console.log(LOG, `Aucun article (tentative ${attempt}), retry dans ${attempt}s...`);
+        setTimeout(() => scanWithRetry(attempt + 1), attempt * 1000);
+      }
+    };
+
     if (watchedPages[url]) {
       console.log(LOG, 'URL dans watchlist → scan auto');
-      scan().catch(e => console.error(LOG, 'Échec scan auto', e));
+      scanWithRetry().catch(e => console.error(LOG, 'Échec scan auto', e));
     } else if (UCCartPageDetector.isCartPage()) {
       console.log(LOG, 'Page panier détectée → scan auto');
-      scan().catch(e => console.error(LOG, 'Échec scan auto', e));
+      scanWithRetry().catch(e => console.error(LOG, 'Échec scan auto', e));
     } else {
       console.log(LOG, 'Page ignorée (pas un panier, pas dans watchlist)');
     }
