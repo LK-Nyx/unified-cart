@@ -12,6 +12,7 @@ const UCGenericDetector = (() => {
     '[class*="cart-item"]', '[class*="basket-item"]',
     '[class*="product-row"]', '[class*="cart-product"]',
     '[class*="line-item"]', '[class*="order-item"]',
+    'li:has(a[aria-label])',
   ];
 
   const PRICE_REGEX = /([€$£¥₹])\s*([\d\s]+[.,]\d{2})|([\d\s]+[.,]\d{2})\s*([€$£¥₹])/;
@@ -29,6 +30,11 @@ const UCGenericDetector = (() => {
     for (const c of candidates) {
       const text = c?.textContent?.trim();
       if (text && text.length >= 6 && text.length <= 500) return text;
+    }
+    const ariaLink = el.querySelector('a[aria-label]');
+    if (ariaLink) {
+      const label = ariaLink.getAttribute('aria-label');
+      if (label && label.length >= 6 && label.length <= 500) return label;
     }
     return null;
   };
