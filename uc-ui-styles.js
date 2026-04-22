@@ -21,9 +21,10 @@ const UC_UI_STYLES = `
 
 /* ── Sidebar wrapper ── */
 #uc-sidebar {
-  position: fixed;
+  position: absolute;
   top: 0;
   right: 0;
+  pointer-events: auto;
   width: 380px;
   height: 100vh;
   background: var(--bg);
@@ -208,9 +209,10 @@ const UC_UI_STYLES = `
 
 /* ── Floating button ── */
 #uc-fab {
-  position: fixed;
+  position: absolute;
   bottom: 24px;
   right: 24px;
+  pointer-events: auto;
   width: 48px;
   height: 48px;
   border-radius: 50%;
