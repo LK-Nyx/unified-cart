@@ -32,7 +32,7 @@ const UCSearch = (() => {
 
     const result = {};
     for (const [domain, cart] of Object.entries(carts ?? {})) {
-      const filtered = cart.items.filter(item => _matchItem(item, domain, parsed, labelMode));
+      const filtered = (cart.items ?? []).filter(item => _matchItem(item, domain, parsed, labelMode));
       if (filtered.length > 0) result[domain] = { ...cart, items: filtered };
     }
     return result;
