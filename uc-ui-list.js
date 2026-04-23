@@ -5,7 +5,7 @@
 const UCUIList = (() => {
   const LOG = '[UC:ui-list]';
 
-  const renderSection = (domain, cart, shadowRoot, labelDefs = {}) => {
+  const renderSection = (domain, cart, shadowRoot, labelDefs = {}, favorites = {}) => {
     const cartItems   = cart.items.filter(i => i.source === 'cart');
     const browseItems = cart.items.filter(i => i.source !== 'cart');
 
@@ -70,7 +70,7 @@ const UCUIList = (() => {
         itemsContainer.appendChild(lbl);
       }
       for (const item of items) {
-        itemsContainer.appendChild(UCUIItem.render(item, domain, shadowRoot, { labelDefs }));
+        itemsContainer.appendChild(UCUIItem.render(item, domain, shadowRoot, { labelDefs, favorites }));
       }
     };
 

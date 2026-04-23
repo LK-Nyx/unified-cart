@@ -1,6 +1,6 @@
 // @module uc-ui.js
 // [UC:ui] Shadow DOM : bouton flottant draggable + sidebar.
-// Dépend de : UC_KEYS, UCStorage, UCCartManager, UCLabels, UCSearch, UCPriceChart, UCUIItem, UCUIList, UCUIToast, UCUtils, UC_UI_STYLES
+// Dépend de : UC_KEYS, UCStorage, UCCartManager, UCLabels, UCFavorites, UCSearch, UCPriceChart, UCUIItem, UCUIList, UCUIToast, UCUtils, UC_UI_STYLES
 
 const UCUI = (() => {
   const LOG = '[UC:ui]';
@@ -377,8 +377,21 @@ const UCUI = (() => {
     if (typeof window._ucScan === 'function') {
       UCUIToast.show(_shadow, 'Scan en cours...', 'info');
       await window._ucScan();
+      await _notifyAlerts();
     } else {
       UCUIToast.show(_shadow, 'Scanner non disponible', 'error');
+    }
+  };
+
+  const _notifyAlerts = async () => {
+    try {
+      const carts = await UCCartManager.getAllCarts();
+      const alerts = await UCFavorites.checkAlerts(carts);
+      for (const { item, pct } of alerts) {
+        UCUIToast.show(_shadow, `↓ "${UCUtils.esc(item.name)}" : -${pct}%`, 'success');
+      }
+    } catch (err) {
+      console.error(LOG, 'checkAlerts échoué', err);
     }
   };
 
@@ -405,27 +418,18 @@ const UCUI = (() => {
   };
 
   // ── Render ──
-  const _render = (carts) => {
+  const _render = (carts, favorites = {}) => {
     if (!_shadow) return;
     const cartsEl = _shadow.getElementById('uc-carts');
     const grandTotalEl = _shadow.getElementById('uc-grand-total');
     if (!cartsEl || !grandTotalEl) return;
 
     cartsEl.innerHTML = '';
-    const domains = Object.keys(carts ?? {}).filter(d => carts[d]?.items?.length > 0);
 
-    if (domains.length === 0) {
-      cartsEl.innerHTML = '<p class="uc-empty">Aucun panier enregistré.<br>Naviguez vers une page panier et cliquez "Scanner".</p>';
-      grandTotalEl.textContent = '—';
-      return;
-    }
-
+    // Total calculé sur les carts complets (non filtrés)
     let grandTotal = 0;
     const currencies = new Set();
-
-    for (const domain of domains.sort()) {
-      const cart = carts[domain];
-      cartsEl.appendChild(UCUIList.renderSection(domain, cart, _shadow, _labelDefs));
+    for (const cart of Object.values(_loadedCarts ?? {})) {
       grandTotal += cart.items.filter(i => i.source === 'cart').reduce((s, i) => s + ((i.price ?? 0) * (i.quantity ?? 1)), 0);
       cart.items.filter(i => i.source === 'cart').forEach(i => { if (i.currency) currencies.add(i.currency); });
     }
@@ -436,6 +440,24 @@ const UCUI = (() => {
       const currency = currencies.size === 1 ? [...currencies][0] : '€';
       grandTotalEl.textContent = `${currency}${grandTotal.toFixed(2)}`;
     }
+
+    const domains = Object.keys(carts ?? {}).filter(d => carts[d]?.items?.length > 0);
+
+    if (domains.length === 0 && Object.keys(favorites).length === 0) {
+      cartsEl.innerHTML = '<p class="uc-empty">Aucun panier enregistré.<br>Naviguez vers une page panier et cliquez "Scanner".</p>';
+      grandTotalEl.textContent = '—';
+      return;
+    }
+
+    // Section favoris en premier
+    const favSection = UCUIList.renderFavoritesSection(carts, favorites, _labelDefs, _shadow);
+    if (favSection) cartsEl.appendChild(favSection);
+
+    // Sections par domaine
+    for (const domain of domains.sort()) {
+      const cart = carts[domain];
+      cartsEl.appendChild(UCUIList.renderSection(domain, cart, _shadow, _labelDefs, favorites));
+    }
   };
 
   // ── Load ──
@@ -443,12 +465,14 @@ const UCUI = (() => {
     try {
       _loadedCarts = await UCCartManager.getAllCarts();
       _labelDefs = await UCLabels.getAllDefs();
+      const favorites = await UCFavorites.getAll();
+
       if (_currentView === 'history') {
         _renderHistory();
       } else {
         const parsed = UCSearch.parse(_currentQuery, _labelDefs);
-        const filtered = UCSearch.filter(_loadedCarts, parsed, _labelMode, {});
-        _render(filtered);
+        const filtered = UCSearch.filter(_loadedCarts, parsed, _labelMode, favorites);
+        _render(filtered, favorites);
       }
     } catch (err) {
       console.error(LOG, 'Erreur chargement', err);
