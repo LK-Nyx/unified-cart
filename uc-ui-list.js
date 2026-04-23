@@ -116,5 +116,50 @@ const UCUIList = (() => {
     return section;
   };
 
-  return { renderSection };
+  const renderFavoritesSection = (filteredCarts, favorites, labelDefs, shadowRoot) => {
+    const favItems = [];
+    for (const [domain, cart] of Object.entries(filteredCarts)) {
+      for (const item of cart.items ?? []) {
+        if (item.id in favorites) favItems.push({ item, domain });
+      }
+    }
+
+    if (favItems.length === 0) return null;
+
+    const section = document.createElement('div');
+    section.className = 'uc-cart-section uc-favorites-section';
+
+    section.innerHTML = `
+      <div class="uc-cart-section__header" role="button" tabindex="0" aria-expanded="false">
+        <span class="uc-cart-section__toggle" aria-hidden="true">▶</span>
+        <span class="uc-cart-section__domain">⭐ Favoris</span>
+        <span class="uc-cart-section__count">${favItems.length} article${favItems.length > 1 ? 's' : ''}</span>
+      </div>
+      <div class="uc-cart-section__items" hidden></div>
+    `;
+
+    const header = section.querySelector('.uc-cart-section__header');
+    const itemsContainer = section.querySelector('.uc-cart-section__items');
+    const toggle = section.querySelector('.uc-cart-section__toggle');
+
+    for (const { item, domain } of favItems) {
+      itemsContainer.appendChild(UCUIItem.render(item, domain, shadowRoot, { labelDefs, favorites }));
+    }
+
+    const toggleSection = () => {
+      const isExpanded = !itemsContainer.hidden;
+      itemsContainer.hidden = isExpanded;
+      toggle.textContent = isExpanded ? '▶' : '▼';
+      header.setAttribute('aria-expanded', String(!isExpanded));
+    };
+
+    header.addEventListener('click', toggleSection);
+    header.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection(); }
+    });
+
+    return section;
+  };
+
+  return { renderSection, renderFavoritesSection };
 })();
