@@ -1,6 +1,6 @@
 // @module uc-cart-manager.js
 // [UC:cart] Logique métier des paniers : merge, suppression, vidage.
-// Dépend de : UCStorage, UCPriceHistoryEngine, UC_KEYS
+// Dépend de : UCStorage, UCPriceHistoryEngine, UC_KEYS, UCLabels
 
 const UCCartManager = (() => {
   const LOG = '[UC:cart]';
@@ -52,20 +52,28 @@ const UCCartManager = (() => {
           const current = itemMap.get(id);
           const withHistory = UCPriceHistoryEngine.append(current, incoming.price);
           const source = (current.source === 'cart' || incoming.source === 'cart') ? 'cart' : 'browse';
+          const genericLabels = UCLabels.detectGeneric(incoming);
+          const userLabels = (current.labels ?? []).filter(
+            lid => !UC_CONFIG.GENERIC_LABELS.some(g => g.id === lid)
+          );
           itemMap.set(id, {
             ...withHistory,
             price: incoming.price,
             quantity: incoming.quantity ?? current.quantity ?? 1,
             image: incoming.image ?? current.image,
             source,
+            labels: [...new Set([...userLabels, ...genericLabels])],
             meta: { ...(current.meta ?? {}), ...(incoming.meta ?? {}) },
           });
         } else {
           console.log(LOG, `Nouvel article dans ${domain} : "${incoming.name}"`);
+          const genericLabels = UCLabels.detectGeneric(incoming);
           itemMap.set(id, {
-            ...incoming, id,
+            ...incoming,
+            id,
             addedAt: Date.now(),
             quantity: incoming.quantity ?? 1,
+            labels: [...new Set([...(incoming.labels ?? []), ...genericLabels])],
             priceHistory: [{ price: incoming.price, seenAt: Date.now() }],
           });
           itemNameMap.set(incoming.name?.toLowerCase().trim(), id);
