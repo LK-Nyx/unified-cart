@@ -1,11 +1,11 @@
 // @module uc-ui-list.js
 // [UC:ui] Render d'une section de panier (un domaine) dans la sidebar Shadow DOM.
-// Dépend de : UCUtils, UCUIItem, UCUIToast, UCCartManager, UCUI
+// Dépend de : UCUtils, UCUIItem, UCUIToast, UCCartManager, UCUI, UCLabels
 
 const UCUIList = (() => {
   const LOG = '[UC:ui-list]';
 
-  const renderSection = (domain, cart, shadowRoot) => {
+  const renderSection = (domain, cart, shadowRoot, labelDefs = {}) => {
     const cartItems   = cart.items.filter(i => i.source === 'cart');
     const browseItems = cart.items.filter(i => i.source !== 'cart');
 
@@ -40,6 +40,23 @@ const UCUIList = (() => {
       </div>
     `;
 
+    const domainLabels = UCLabels.getForDomain({ [domain]: cart }, domain);
+    if (domainLabels.length) {
+      const badgesEl = document.createElement('div');
+      badgesEl.className = 'uc-label-badges';
+      badgesEl.style.padding = '.15rem .75rem .25rem 2.2rem';
+      for (const lid of domainLabels) {
+        const def = labelDefs[lid];
+        if (!def) continue;
+        const badge = document.createElement('span');
+        badge.className = 'uc-label-badge';
+        badge.style.background = def.color ?? '#89b4fa';
+        badge.textContent = def.name;
+        badgesEl.appendChild(badge);
+      }
+      section.insertBefore(badgesEl, section.querySelector('.uc-cart-section__items'));
+    }
+
     const header = section.querySelector('.uc-cart-section__header');
     const itemsContainer = section.querySelector('.uc-cart-section__items');
     const footer = section.querySelector('.uc-cart-section__footer');
@@ -53,7 +70,7 @@ const UCUIList = (() => {
         itemsContainer.appendChild(lbl);
       }
       for (const item of items) {
-        itemsContainer.appendChild(UCUIItem.render(item, domain, shadowRoot));
+        itemsContainer.appendChild(UCUIItem.render(item, domain, shadowRoot, { labelDefs }));
       }
     };
 

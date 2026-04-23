@@ -1,11 +1,11 @@
 // @module uc-ui-item.js
 // [UC:ui] Render d'un article de panier dans la sidebar Shadow DOM.
-// Dépend de : UCUtils, UCPriceHistoryEngine, UCUIToast, UCCartManager, UCUI
+// Dépend de : UCUtils, UCPriceHistoryEngine, UCUIToast, UCCartManager, UCUI, UCLabels (via ctx.labelDefs)
 
 const UCUIItem = (() => {
   const LOG = '[UC:ui-item]';
 
-  const render = (item, domain, shadowRoot) => {
+  const render = (item, domain, shadowRoot, ctx = {}) => {
     const el = document.createElement('div');
     el.className = 'uc-cart-item';
     el.dataset.itemId = item.id;
@@ -23,12 +23,22 @@ const UCUIItem = (() => {
 
     const priceStr = `${item.currency ?? '€'}${(item.price ?? 0).toFixed(2)}`;
     const qty = item.quantity && item.quantity > 1 ? ` ×${item.quantity}` : '';
+    const labelDefs = ctx.labelDefs ?? {};
+    const itemLabels = item.labels ?? [];
 
     el.innerHTML = `
       <div class="uc-cart-item__main">
         <span class="uc-cart-item__name" title="${UCUtils.esc(item.name)}">${UCUtils.esc(item.name ?? '—')}</span>
         <span class="uc-cart-item__price">${UCUtils.esc(priceStr)}${UCUtils.esc(qty)}</span>
       </div>
+      ${itemLabels.length ? `
+        <div class="uc-label-badges">
+          ${itemLabels.map(lid => {
+            const def = labelDefs[lid];
+            if (!def) return '';
+            return `<span class="uc-label-badge" style="background:${UCUtils.esc(def.color ?? '#89b4fa')}">${UCUtils.esc(def.name)}</span>`;
+          }).join('')}
+        </div>` : ''}
       <div class="uc-cart-item__meta">
         ${trendLabel
           ? `<span class="uc-cart-item__trend ${trendClass}" title="${UCUtils.esc(tooltip)}">${UCUtils.esc(trendLabel)}</span>`
