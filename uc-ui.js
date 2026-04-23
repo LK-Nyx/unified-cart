@@ -55,7 +55,6 @@ const UCUI = (() => {
           <button id="uc-btn-close" class="uc-btn uc-btn--icon" title="Fermer">✕</button>
         </div>
       </div>
-      <div class="uc-total-bar">Total : <span id="uc-grand-total">—</span></div>
       <div class="uc-searchbar">
         <div class="uc-searchbar__row">
           <span class="uc-searchbar__icon">🔍</span>
@@ -428,42 +427,41 @@ const UCUI = (() => {
   const _render = (carts, favorites = {}) => {
     if (!_shadow) return;
     const cartsEl = _shadow.getElementById('uc-carts');
-    const grandTotalEl = _shadow.getElementById('uc-grand-total');
-    if (!cartsEl || !grandTotalEl) return;
+    if (!cartsEl) return;
+
+    // Mémoriser les sections ouvertes avant de vider le DOM
+    const expandedDomains = new Set(
+      [...cartsEl.querySelectorAll('.uc-cart-section[data-domain]')]
+        .filter(s => s.querySelector('.uc-cart-section__items') && !s.querySelector('.uc-cart-section__items').hidden)
+        .map(s => s.dataset.domain)
+    );
+    const favWasExpanded = (() => {
+      const favItems = cartsEl.querySelector('.uc-favorites-section .uc-cart-section__items');
+      return favItems ? !favItems.hidden : false;
+    })();
 
     cartsEl.innerHTML = '';
-
-    // Total calculé sur les carts complets (non filtrés)
-    let grandTotal = 0;
-    const currencies = new Set();
-    for (const cart of Object.values(_loadedCarts ?? {})) {
-      grandTotal += cart.items.filter(i => i.source === 'cart').reduce((s, i) => s + ((i.price ?? 0) * (i.quantity ?? 1)), 0);
-      cart.items.filter(i => i.source === 'cart').forEach(i => { if (i.currency) currencies.add(i.currency); });
-    }
-
-    if (currencies.size > 1) {
-      grandTotalEl.textContent = `Multi-devises (${grandTotal.toFixed(2)})`;
-    } else {
-      const currency = currencies.size === 1 ? [...currencies][0] : '€';
-      grandTotalEl.textContent = `${currency}${grandTotal.toFixed(2)}`;
-    }
 
     const domains = Object.keys(carts ?? {}).filter(d => carts[d]?.items?.length > 0);
 
     if (domains.length === 0 && Object.keys(favorites).length === 0) {
       cartsEl.innerHTML = '<p class="uc-empty">Aucun panier enregistré.<br>Naviguez vers une page panier et cliquez "Scanner".</p>';
-      grandTotalEl.textContent = '—';
       return;
     }
 
     // Section favoris en premier
     const favSection = UCUIList.renderFavoritesSection(carts, favorites, _labelDefs, _shadow);
-    if (favSection) cartsEl.appendChild(favSection);
+    if (favSection) {
+      cartsEl.appendChild(favSection);
+      if (favWasExpanded) favSection.querySelector('.uc-cart-section__header')?.click();
+    }
 
     // Sections par domaine
     for (const domain of domains.sort()) {
       const cart = carts[domain];
-      cartsEl.appendChild(UCUIList.renderSection(domain, cart, _shadow, _labelDefs, favorites));
+      const sec = UCUIList.renderSection(domain, cart, _shadow, _labelDefs, favorites);
+      cartsEl.appendChild(sec);
+      if (expandedDomains.has(domain)) sec.querySelector('.uc-cart-section__header')?.click();
     }
   };
 

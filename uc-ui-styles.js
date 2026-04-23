@@ -60,18 +60,6 @@ const UC_UI_STYLES = `
 .uc-header__title { font-weight: 700; font-size: 14px; color: var(--accent); }
 .uc-header__actions { display: flex; gap: .35rem; }
 
-/* ── Total bar ── */
-.uc-total-bar {
-  padding: .45rem .75rem;
-  background: var(--surface);
-  font-weight: 700;
-  font-size: 15px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-#uc-grand-total { color: var(--accent); }
-
 /* ── Carts container ── */
 .uc-carts {
   padding: .5rem 0;
@@ -99,8 +87,7 @@ const UC_UI_STYLES = `
 
 .uc-cart-section__toggle { color: var(--muted); font-size: 10px; width: 10px; }
 .uc-cart-section__domain { font-weight: 600; flex: 1; color: var(--accent); }
-.uc-cart-section__count { color: var(--muted); font-size: 11px; }
-.uc-cart-section__total { font-weight: 700; margin-left: auto; }
+.uc-cart-section__count { color: var(--muted); font-size: 11px; margin-left: auto; }
 
 .uc-cart-section__footer {
   display: flex;
@@ -444,6 +431,20 @@ const UC_UI_STYLES = `
 }
 
 .uc-threshold-popover__actions { display: flex; gap: .3rem; }
+
+/* ── Popover labels ── */
+.uc-label-popover { max-height: 180px; overflow-y: auto; }
+
+.uc-label-popover__row {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .15rem 0;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.uc-label-popover__row input[type="checkbox"] { cursor: pointer; flex-shrink: 0; }
 
 /* ── Chart drill-down ── */
 .uc-chart-panel {

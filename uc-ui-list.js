@@ -9,8 +9,6 @@ const UCUIList = (() => {
     const cartItems   = cart.items.filter(i => i.source === 'cart');
     const browseItems = cart.items.filter(i => i.source !== 'cart');
 
-    const cartTotal   = cartItems.reduce((s, i) => s + ((i.price ?? 0) * (i.quantity ?? 1)), 0);
-    const currency    = cart.items[0]?.currency ?? '€';
     const lastUpdated = cart.lastUpdated
       ? new Date(cart.lastUpdated).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
       : '—';
@@ -18,9 +16,6 @@ const UCUIList = (() => {
     const countLabel  = cartItems.length > 0
       ? `${cartItems.length} article${cartItems.length > 1 ? 's' : ''}`
       : `${browseItems.length} consulté${browseItems.length > 1 ? 's' : ''}`;
-    const totalLabel  = cartItems.length > 0
-      ? `${UCUtils.esc(currency)}${cartTotal.toFixed(2)}`
-      : '—';
 
     const section = document.createElement('div');
     section.className = 'uc-cart-section';
@@ -31,7 +26,6 @@ const UCUIList = (() => {
         <span class="uc-cart-section__toggle" aria-hidden="true">▶</span>
         <span class="uc-cart-section__domain">${UCUtils.esc(domain)}</span>
         <span class="uc-cart-section__count">${countLabel}</span>
-        <span class="uc-cart-section__total">${totalLabel}</span>
       </div>
       <div class="uc-cart-section__items" hidden></div>
       <div class="uc-cart-section__footer" hidden>

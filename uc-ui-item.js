@@ -26,6 +26,7 @@ const UCUIItem = (() => {
     const labelDefs = ctx.labelDefs ?? {};
     const itemLabels = item.labels ?? [];
     const isFav = ctx.favorites ? (item.id in ctx.favorites) : false;
+    const hasHistory = (item.priceHistory ?? []).length >= 2;
 
     el.innerHTML = `
       <div class="uc-cart-item__main">
@@ -47,7 +48,9 @@ const UCUIItem = (() => {
         }
         <div class="uc-cart-item__actions">
           ${item.url ? `<button class="uc-btn uc-btn--icon uc-btn--open" title="Ouvrir le produit">🔗</button>` : ''}
-          <button class="uc-btn uc-btn--fav ${isFav ? 'uc-btn--fav--active' : ''}" title="${isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}">⭐</button>
+          ${hasHistory ? `<button class="uc-btn uc-btn--fav uc-btn--chart" title="Historique des prix">📈</button>` : ''}
+          <button class="uc-btn uc-btn--fav uc-btn--label" title="Gérer les labels">🏷</button>
+          <button class="uc-btn uc-btn--fav uc-btn--toggle-fav ${isFav ? 'uc-btn--fav--active' : ''}" title="${isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}">${isFav ? '⭐' : '☆'}</button>
           <button class="uc-btn uc-btn--icon uc-btn--delete" title="Supprimer cet article">🗑</button>
         </div>
       </div>
@@ -66,7 +69,8 @@ const UCUIItem = (() => {
       });
     }
 
-    const btnFav = el.querySelector('.uc-btn--fav');
+    // ── Bouton favori ──
+    const btnFav = el.querySelector('.uc-btn--toggle-fav');
     if (btnFav) {
       btnFav.addEventListener('click', async (e) => {
         e.stopPropagation();
@@ -87,13 +91,14 @@ const UCUIItem = (() => {
       });
     }
 
+    // ── Seuil d'alerte (si favori) ──
     if (isFav) {
       const settingsBtn = document.createElement('button');
       settingsBtn.className = 'uc-btn uc-btn--fav';
       settingsBtn.title = 'Seuil d\'alerte prix';
       settingsBtn.textContent = '⚙';
       settingsBtn.style.fontSize = '11px';
-      el.querySelector('.uc-cart-item__actions').insertBefore(settingsBtn, el.querySelector('.uc-btn--fav'));
+      el.querySelector('.uc-cart-item__actions').insertBefore(settingsBtn, el.querySelector('.uc-btn--toggle-fav'));
 
       let popoverEl = null;
       settingsBtn.addEventListener('click', (e) => {
@@ -130,12 +135,12 @@ const UCUIItem = (() => {
       });
     }
 
-    const mainZone = el.querySelector('.uc-cart-item__main');
-    if ((item.priceHistory ?? []).length >= 2) {
-      mainZone.style.cursor = 'pointer';
-      mainZone.title = 'Voir l\'historique des prix';
+    // ── Bouton historique 📈 ──
+    const btnChart = el.querySelector('.uc-btn--chart');
+    if (btnChart) {
       let chartPanel = null;
-      mainZone.addEventListener('click', () => {
+      btnChart.addEventListener('click', (e) => {
+        e.stopPropagation();
         if (chartPanel) { chartPanel.remove(); chartPanel = null; return; }
         chartPanel = document.createElement('div');
         chartPanel.className = 'uc-chart-panel';
@@ -143,8 +148,8 @@ const UCUIItem = (() => {
         const header = document.createElement('div');
         header.className = 'uc-chart-panel__header';
         header.innerHTML = `<button class="uc-chart-panel__back" title="Fermer">←</button><span>${UCUtils.esc(item.name)}</span>`;
-        header.querySelector('.uc-chart-panel__back').addEventListener('click', (e) => {
-          e.stopPropagation();
+        header.querySelector('.uc-chart-panel__back').addEventListener('click', (ev) => {
+          ev.stopPropagation();
           chartPanel.remove();
           chartPanel = null;
         });
@@ -158,6 +163,56 @@ const UCUIItem = (() => {
         chartPanel.appendChild(UCPriceChart.renderFull(item));
         chartPanel.appendChild(stats);
         el.appendChild(chartPanel);
+      });
+    }
+
+    // ── Bouton labels 🏷 ──
+    const btnLabelEl = el.querySelector('.uc-btn--label');
+    if (btnLabelEl) {
+      let labelPopover = null;
+      btnLabelEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (labelPopover) { labelPopover.remove(); labelPopover = null; return; }
+
+        const allDefs = ctx.labelDefs ?? {};
+        const currentLabels = new Set(item.labels ?? []);
+
+        labelPopover = document.createElement('div');
+        labelPopover.className = 'uc-threshold-popover uc-label-popover';
+
+        if (Object.keys(allDefs).length === 0) {
+          labelPopover.innerHTML = '<p style="font-size:11px;color:var(--muted)">Aucun label disponible.</p>';
+        } else {
+          for (const [lid, def] of Object.entries(allDefs)) {
+            const row = document.createElement('label');
+            row.className = 'uc-label-popover__row';
+            row.innerHTML = `
+              <input type="checkbox" data-lid="${UCUtils.esc(lid)}" ${currentLabels.has(lid) ? 'checked' : ''}>
+              <span class="uc-label-badge" style="background:${UCUtils.esc(def.color ?? '#89b4fa')}">${UCUtils.esc(def.name)}</span>
+            `;
+            labelPopover.appendChild(row);
+          }
+
+          const saveBtn = document.createElement('button');
+          saveBtn.className = 'uc-btn uc-btn--primary';
+          saveBtn.style.cssText = 'font-size:11px;padding:.2rem .5rem;margin-top:.4rem;width:100%';
+          saveBtn.textContent = 'Appliquer';
+          saveBtn.addEventListener('click', async () => {
+            const newLabels = [...labelPopover.querySelectorAll('input[data-lid]:checked')].map(i => i.dataset.lid);
+            try {
+              await UCCartManager.updateItemLabels(domain, item.id, newLabels);
+              labelPopover.remove(); labelPopover = null;
+              UCUIToast.show(shadowRoot, 'Labels mis à jour', 'success');
+              UCUI.load();
+            } catch (err) {
+              console.error(LOG, 'updateItemLabels échoué', err);
+              UCUIToast.show(shadowRoot, 'Erreur labels', 'error');
+            }
+          });
+          labelPopover.appendChild(saveBtn);
+        }
+
+        el.appendChild(labelPopover);
       });
     }
 

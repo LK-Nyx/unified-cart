@@ -114,5 +114,21 @@ const UCCartManager = (() => {
     return (await UCStorage.get(UC_KEYS.CARTS)) ?? {};
   };
 
-  return { mergeCart, removeItem, clearCart, getAllCarts };
+  const updateItemLabels = async (domain, itemId, labels) => {
+    await UCStorage.update(UC_KEYS.CARTS, (carts) => {
+      const all = carts ?? {};
+      if (!all[domain]) return all;
+      return {
+        ...all,
+        [domain]: {
+          ...all[domain],
+          items: all[domain].items.map(i => i.id === itemId ? { ...i, labels } : i),
+          lastUpdated: Date.now(),
+        },
+      };
+    });
+    console.log(LOG, `Labels de ${itemId} mis à jour : [${labels.join(', ')}]`);
+  };
+
+  return { mergeCart, removeItem, clearCart, getAllCarts, updateItemLabels };
 })();
