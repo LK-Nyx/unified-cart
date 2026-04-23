@@ -1,26 +1,30 @@
 // ==UserScript==
 // @name         Unified Cart
 // @namespace    unified-cart
-// @version      1.0.5
+// @version      1.1.0
 // @description  Agrège vos paniers d'achat de tous les sites, 100% local et privé.
 // @match        *://*/*
 // @grant        GM.setValue
 // @grant        GM.getValue
 // @grant        GM_openInTab
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-constants.js?v=1.0.5
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-storage.js?v=1.0.5
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-price-history.js?v=1.0.5
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-cart-manager.js?v=1.0.5
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-watchlist.js?v=1.0.5
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-cart-page.js?v=1.0.5
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-generic.js?v=1.0.5
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-amazon.js?v=1.0.5
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-utils.js?v=1.0.5
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-styles.js?v=1.0.5
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-toast.js?v=1.0.5
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-item.js?v=1.0.5
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-list.js?v=1.0.5
-// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui.js?v=1.0.5
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-constants.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-storage.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-price-history.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-labels.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-favorites.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-cart-manager.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-watchlist.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-cart-page.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-generic.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-amazon.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-utils.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-styles.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-toast.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-search.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-price-chart.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-item.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui-list.js?v=1.1.0
+// @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-ui.js?v=1.1.0
 // ==/UserScript==
 
 // @module unified-cart.user.js
