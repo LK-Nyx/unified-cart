@@ -135,12 +135,11 @@ const UCUIItem = (() => {
       });
     }
 
-    // ── Bouton historique 📈 ──
-    const btnChart = el.querySelector('.uc-btn--chart');
-    if (btnChart) {
+    // ── Historique des prix (bouton 📈 + clic sur le titre) ──
+    if (hasHistory) {
       let chartPanel = null;
-      btnChart.addEventListener('click', (e) => {
-        e.stopPropagation();
+      const toggleChart = (e) => {
+        e?.stopPropagation();
         if (chartPanel) { chartPanel.remove(); chartPanel = null; return; }
         chartPanel = document.createElement('div');
         chartPanel.className = 'uc-chart-panel';
@@ -163,7 +162,15 @@ const UCUIItem = (() => {
         chartPanel.appendChild(UCPriceChart.renderFull(item));
         chartPanel.appendChild(stats);
         el.appendChild(chartPanel);
-      });
+      };
+
+      const btnChart = el.querySelector('.uc-btn--chart');
+      if (btnChart) btnChart.addEventListener('click', toggleChart);
+
+      const mainZone = el.querySelector('.uc-cart-item__main');
+      mainZone.style.cursor = 'pointer';
+      mainZone.title = 'Voir l\'historique des prix';
+      mainZone.addEventListener('click', toggleChart);
     }
 
     // ── Bouton labels 🏷 ──

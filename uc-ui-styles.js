@@ -140,7 +140,7 @@ const UC_UI_STYLES = `
   margin-top: .2rem;
 }
 
-.uc-cart-item__trend { font-size: 11px; cursor: help; }
+.uc-cart-item__trend { font-size: 11px; }
 .trend--down { color: var(--green); }
 .trend--up   { color: var(--red); }
 .trend--stable { color: var(--muted); }
