@@ -90,6 +90,17 @@
       console.error(LOG, 'Échec initialisation UI', e);
     }
 
+    // Alertes favoris silencieuses au chargement
+    try {
+      const carts = await UCCartManager.getAllCarts();
+      const alerts = await UCFavorites.checkAlerts(carts);
+      if (alerts.length > 0 && typeof window._ucNotifyAlerts === 'function') {
+        window._ucNotifyAlerts(alerts);
+      }
+    } catch (e) {
+      console.warn(LOG, 'Alertes favoris au démarrage échouées', e);
+    }
+
     const url = window.location.href;
 
     // Vérifier la watchlist

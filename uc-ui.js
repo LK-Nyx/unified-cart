@@ -360,6 +360,13 @@ const UCUI = (() => {
       load();
     });
 
+    // Exposer la fonction de notification des alertes
+    window._ucNotifyAlerts = async (alerts) => {
+      for (const { item, pct } of (alerts ?? [])) {
+        UCUIToast.show(_shadow, `↓ "${UCUtils.esc(item.name)}" : -${pct}%`, 'success');
+      }
+    };
+
     // Chargement initial
     await load();
     console.log(LOG, 'UI initialisée');
