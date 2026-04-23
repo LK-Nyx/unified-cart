@@ -1,12 +1,17 @@
 // @module uc-ui.js
 // [UC:ui] Shadow DOM : bouton flottant draggable + sidebar.
-// Dépend de : UC_KEYS, UCStorage, UCCartManager, UCUIItem, UCUIList, UCUIToast, UCUtils, UC_UI_STYLES
+// Dépend de : UC_KEYS, UCStorage, UCCartManager, UCLabels, UCSearch, UCPriceChart, UCUIItem, UCUIList, UCUIToast, UCUtils, UC_UI_STYLES
 
 const UCUI = (() => {
   const LOG = '[UC:ui]';
   let _root = null;
   let _shadow = null;
   let _abortController = null;
+  let _labelMode = 'OR';
+  let _currentQuery = '';
+  let _loadedCarts = {};
+  let _labelDefs = {};
+  let _currentView = 'main';
 
   // ── Init Shadow DOM ──
   const _init = async () => {
@@ -45,11 +50,25 @@ const UCUI = (() => {
           <button id="uc-btn-export" class="uc-btn uc-btn--icon" title="Exporter JSON">↓</button>
           <button id="uc-btn-import" class="uc-btn uc-btn--icon" title="Importer JSON">↑</button>
           <input type="file" id="uc-import-input" accept=".json" style="display:none">
+          <button id="uc-btn-history" class="uc-btn uc-btn--icon" title="Historique des prix">📈</button>
           <button id="uc-btn-side" class="uc-btn uc-btn--icon" title="Changer de côté">◀</button>
           <button id="uc-btn-close" class="uc-btn uc-btn--icon" title="Fermer">✕</button>
         </div>
       </div>
       <div class="uc-total-bar">Total : <span id="uc-grand-total">—</span></div>
+      <div class="uc-searchbar">
+        <div class="uc-searchbar__row">
+          <span class="uc-searchbar__icon">🔍</span>
+          <input class="uc-searchbar__input" id="uc-search-input" placeholder='Rechercher… ou label:tech,gaming' type="text" autocomplete="off">
+          <button class="uc-searchbar__clear" id="uc-search-clear" title="Effacer">✕</button>
+        </div>
+        <div class="uc-searchbar__chips" id="uc-search-chips">
+          <div class="uc-label-mode">
+            <button class="uc-label-mode__btn" id="uc-mode-or">OR</button>
+            <button class="uc-label-mode__btn" id="uc-mode-and">AND</button>
+          </div>
+        </div>
+      </div>
       <div id="uc-carts" class="uc-carts"></div>
       <div class="uc-footer">
         <button id="uc-btn-scan" class="uc-btn uc-btn--primary">Scanner cette page</button>
@@ -267,6 +286,80 @@ const UCUI = (() => {
       }
     });
 
+    // ── Searchbar ──
+    const searchInput = _shadow.getElementById('uc-search-input');
+    const searchClear = _shadow.getElementById('uc-search-clear');
+    const chipsContainer = _shadow.getElementById('uc-search-chips');
+    const btnModeOr  = _shadow.getElementById('uc-mode-or');
+    const btnModeAnd = _shadow.getElementById('uc-mode-and');
+
+    const _updateModeButtons = () => {
+      btnModeOr.classList.toggle('uc-label-mode__btn--active', _labelMode === 'OR');
+      btnModeAnd.classList.toggle('uc-label-mode__btn--active', _labelMode === 'AND');
+    };
+    _updateModeButtons();
+
+    const _renderChips = (parsed) => {
+      const existing = chipsContainer.querySelectorAll('.uc-chip');
+      existing.forEach(c => c.remove());
+      for (const labelId of parsed.labels) {
+        const def = _labelDefs[labelId];
+        const chip = document.createElement('span');
+        chip.className = 'uc-chip';
+        chip.style.borderColor = def?.color ?? '#89b4fa';
+        chip.innerHTML = `<span>${UCUtils.esc(def?.name ?? labelId)}</span><button class="uc-chip__remove" data-lid="${UCUtils.esc(labelId)}" title="Retirer ce label">×</button>`;
+        chipsContainer.appendChild(chip);
+      }
+    };
+
+    const _removeChipLabel = (labelId) => {
+      const current = searchInput.value;
+      const match = current.match(/label:([^\s]+)/i);
+      if (!match) return;
+      const remaining = match[1].split(',').filter(id => id !== labelId);
+      searchInput.value = remaining.length
+        ? current.replace(/label:[^\s]+/i, `label:${remaining.join(',')}`)
+        : current.replace(/label:[^\s]+\s?/i, '').trim();
+      searchInput.dispatchEvent(new Event('input'));
+    };
+
+    chipsContainer.addEventListener('click', (e) => {
+      const btn = e.target.closest('.uc-chip__remove');
+      if (btn) _removeChipLabel(btn.dataset.lid);
+    });
+
+    searchInput.addEventListener('input', () => {
+      _currentQuery = searchInput.value;
+      const parsed = UCSearch.parse(_currentQuery, _labelDefs);
+      _renderChips(parsed);
+      load();
+    });
+
+    searchClear.addEventListener('click', () => {
+      searchInput.value = '';
+      _currentQuery = '';
+      _renderChips({ labels: [] });
+      load();
+    });
+
+    btnModeOr.addEventListener('click', () => {
+      _labelMode = 'OR';
+      _updateModeButtons();
+      if (_currentQuery) load();
+    });
+
+    btnModeAnd.addEventListener('click', () => {
+      _labelMode = 'AND';
+      _updateModeButtons();
+      if (_currentQuery) load();
+    });
+
+    // ── Onglet Historique ──
+    _shadow.getElementById('uc-btn-history').addEventListener('click', () => {
+      _currentView = _currentView === 'history' ? 'main' : 'history';
+      load();
+    });
+
     // Chargement initial
     await load();
     console.log(LOG, 'UI initialisée');
@@ -332,7 +425,7 @@ const UCUI = (() => {
 
     for (const domain of domains.sort()) {
       const cart = carts[domain];
-      cartsEl.appendChild(UCUIList.renderSection(domain, cart, _shadow));
+      cartsEl.appendChild(UCUIList.renderSection(domain, cart, _shadow, _labelDefs));
       grandTotal += cart.items.filter(i => i.source === 'cart').reduce((s, i) => s + ((i.price ?? 0) * (i.quantity ?? 1)), 0);
       cart.items.filter(i => i.source === 'cart').forEach(i => { if (i.currency) currencies.add(i.currency); });
     }
@@ -348,8 +441,15 @@ const UCUI = (() => {
   // ── Load ──
   const load = async () => {
     try {
-      const carts = await UCCartManager.getAllCarts();
-      _render(carts);
+      _loadedCarts = await UCCartManager.getAllCarts();
+      _labelDefs = await UCLabels.getAllDefs();
+      if (_currentView === 'history') {
+        _renderHistory();
+      } else {
+        const parsed = UCSearch.parse(_currentQuery, _labelDefs);
+        const filtered = UCSearch.filter(_loadedCarts, parsed, _labelMode, {});
+        _render(filtered);
+      }
     } catch (err) {
       console.error(LOG, 'Erreur chargement', err);
       if (_shadow) {
@@ -357,6 +457,69 @@ const UCUI = (() => {
         if (cartsEl) cartsEl.innerHTML = '<p class="uc-error">Erreur de chargement des données.</p>';
       }
     }
+  };
+
+  const _renderHistory = () => {
+    if (!_shadow) return;
+    const cartsEl = _shadow.getElementById('uc-carts');
+    if (!cartsEl) return;
+    cartsEl.innerHTML = '';
+
+    const allItems = [];
+    for (const [domain, cart] of Object.entries(_loadedCarts ?? {})) {
+      for (const item of cart.items ?? []) {
+        if ((item.priceHistory ?? []).length >= 2) allItems.push({ item, domain });
+      }
+    }
+
+    if (allItems.length === 0) {
+      cartsEl.innerHTML = '<p class="uc-empty">Aucun historique disponible.<br>Scannez des pages plusieurs fois pour voir l\'évolution des prix.</p>';
+      return;
+    }
+
+    const list = document.createElement('div');
+    list.className = 'uc-history-list';
+
+    for (const { item, domain } of allItems) {
+      const row = document.createElement('div');
+      row.className = 'uc-history-item';
+
+      const mini = UCPriceChart.renderMini(item);
+      const info = document.createElement('div');
+      info.className = 'uc-history-item__info';
+      info.innerHTML = `
+        <div class="uc-history-item__name" title="${UCUtils.esc(item.name)}">${UCUtils.esc(item.name)}</div>
+        <div class="uc-history-item__domain">${UCUtils.esc(domain)}</div>
+      `;
+
+      row.appendChild(mini);
+      row.appendChild(info);
+      row.addEventListener('click', () => {
+        const panel = document.createElement('div');
+        panel.className = 'uc-chart-panel';
+        panel.innerHTML = `
+          <div class="uc-chart-panel__header">
+            <button class="uc-chart-panel__back" title="Retour">←</button>
+            <span>${UCUtils.esc(item.name)} — ${UCUtils.esc(domain)}</span>
+          </div>
+        `;
+        panel.querySelector('.uc-chart-panel__back').addEventListener('click', () => load());
+        const fullChart = UCPriceChart.renderFull(item);
+        const prices = (item.priceHistory ?? []).map(h => h.price);
+        const stats = document.createElement('div');
+        stats.className = 'uc-chart-panel__stats';
+        stats.textContent = prices.length
+          ? `Min ${item.currency ?? '€'}${Math.min(...prices).toFixed(2)} · Max ${item.currency ?? '€'}${Math.max(...prices).toFixed(2)} · ${prices.length} points`
+          : '';
+        panel.appendChild(fullChart);
+        panel.appendChild(stats);
+        cartsEl.innerHTML = '';
+        cartsEl.appendChild(panel);
+      });
+
+      list.appendChild(row);
+    }
+    cartsEl.appendChild(list);
   };
 
   return { load, _init, _toggle, _onScan };
