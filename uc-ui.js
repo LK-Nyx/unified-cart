@@ -77,14 +77,8 @@ const UCUI = (() => {
       </div>
       <div id="uc-settings-panel" class="uc-settings-panel" hidden>
         <p class="uc-settings-panel__title">⚙ Paramètres</p>
-        <div class="uc-settings-panel__row">
-          <label class="uc-settings-panel__label">Clé API Claude</label>
-          <input class="uc-input" id="uc-claude-key-input" type="password" placeholder="sk-ant-…" autocomplete="off">
-        </div>
-        <div class="uc-settings-panel__hint">Utilisée uniquement pour l'auto-étiquetage IA des articles. Stockée localement.</div>
         <div class="uc-settings-panel__actions">
-          <button class="uc-btn uc-btn--primary" id="uc-btn-save-key">Enregistrer</button>
-          <button class="uc-btn uc-btn--secondary" id="uc-btn-autolabel">Auto-étiqueter tout</button>
+          <button class="uc-btn uc-btn--primary" id="uc-btn-autolabel">🏷 Auto-étiqueter tout</button>
         </div>
         <div id="uc-autolabel-status" class="uc-settings-panel__status"></div>
       </div>
@@ -301,40 +295,21 @@ const UCUI = (() => {
 
     // ── Panneau settings ──
     const settingsPanel = _shadow.getElementById('uc-settings-panel');
-    const claudeKeyInput = _shadow.getElementById('uc-claude-key-input');
     const autolabelStatus = _shadow.getElementById('uc-autolabel-status');
 
-    _shadow.getElementById('uc-btn-settings').addEventListener('click', async () => {
+    _shadow.getElementById('uc-btn-settings').addEventListener('click', () => {
       settingsPanel.hidden = !settingsPanel.hidden;
-      if (!settingsPanel.hidden) {
-        const savedKey = await UCAutoLabels.getApiKey();
-        claudeKeyInput.value = savedKey ? '••••••••' : '';
-        claudeKeyInput.dataset.saved = savedKey ? '1' : '';
-      }
-    });
-
-    claudeKeyInput.addEventListener('focus', () => {
-      if (claudeKeyInput.dataset.saved) { claudeKeyInput.value = ''; claudeKeyInput.dataset.saved = ''; }
-    });
-
-    _shadow.getElementById('uc-btn-save-key').addEventListener('click', async () => {
-      const val = claudeKeyInput.value.trim();
-      if (!val || val === '••••••••') return;
-      await UCAutoLabels.setApiKey(val);
-      claudeKeyInput.value = '••••••••';
-      claudeKeyInput.dataset.saved = '1';
-      UCUIToast.show(_shadow, 'Clé API enregistrée', 'success');
     });
 
     _shadow.getElementById('uc-btn-autolabel').addEventListener('click', async () => {
       const btn = _shadow.getElementById('uc-btn-autolabel');
       btn.disabled = true;
-      autolabelStatus.textContent = 'Chargement…';
+      autolabelStatus.textContent = 'Analyse en cours…';
       try {
         const n = await UCAutoLabels.labelAll((done, total) => {
           autolabelStatus.textContent = `${done} / ${total} article(s)…`;
         });
-        autolabelStatus.textContent = `${n} article(s) étiquetés.`;
+        autolabelStatus.textContent = n > 0 ? `${n} article(s) étiquetés.` : 'Tous les articles sont déjà étiquetés.';
         if (n > 0) load();
       } catch (err) {
         autolabelStatus.textContent = 'Erreur : ' + err.message;

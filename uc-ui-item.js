@@ -206,8 +206,15 @@ const UCUIItem = (() => {
           saveBtn.textContent = 'Appliquer';
           saveBtn.addEventListener('click', async () => {
             const newLabels = [...labelPopover.querySelectorAll('input[data-lid]:checked')].map(i => i.dataset.lid);
+            const prevLabels = item.labels ?? [];
+            const addedIds   = newLabels.filter(id => !prevLabels.includes(id));
+            const removedIds = prevLabels.filter(id => !newLabels.includes(id));
             try {
               await UCCartManager.updateItemLabels(domain, item.id, newLabels);
+              // Renforcement : le système apprend de la correction manuelle
+              if (addedIds.length || removedIds.length) {
+                UCAutoLabels.reinforce(item, addedIds, removedIds).catch(() => {});
+              }
               labelPopover.remove(); labelPopover = null;
               UCUIToast.show(shadowRoot, 'Labels mis à jour', 'success');
               UCUI.load();

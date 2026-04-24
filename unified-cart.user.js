@@ -6,9 +6,7 @@
 // @match        *://*/*
 // @grant        GM.setValue
 // @grant        GM.getValue
-// @grant        GM.xmlHttpRequest
 // @grant        GM_openInTab
-// @connect      api.anthropic.com
 // @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-constants.js?v=1.3.0
 // @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-storage.js?v=1.3.0
 // @require      https://raw.githubusercontent.com/LK-Nyx/unified-cart/main/uc-price-history.js?v=1.3.0
