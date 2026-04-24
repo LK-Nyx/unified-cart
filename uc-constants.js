@@ -8,6 +8,7 @@ const UC_KEYS = Object.freeze({
   SIDE:          'uc_side',
   LABEL_DEFS:    'uc_label_defs',
   FAVORITES:     'uc_favorites',
+  CLAUDE_KEY:    'uc_claude_key',
 });
 
 const UC_CONFIG = Object.freeze({

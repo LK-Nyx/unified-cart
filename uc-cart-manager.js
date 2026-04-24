@@ -114,7 +114,7 @@ const UCCartManager = (() => {
     return (await UCStorage.get(UC_KEYS.CARTS)) ?? {};
   };
 
-  const updateItemLabels = async (domain, itemId, labels) => {
+  const updateItemLabels = async (domain, itemId, labels, aiLabeled = false) => {
     await UCStorage.update(UC_KEYS.CARTS, (carts) => {
       const all = carts ?? {};
       if (!all[domain]) return all;
@@ -122,7 +122,10 @@ const UCCartManager = (() => {
         ...all,
         [domain]: {
           ...all[domain],
-          items: all[domain].items.map(i => i.id === itemId ? { ...i, labels } : i),
+          items: all[domain].items.map(i => {
+            if (i.id !== itemId) return i;
+            return { ...i, labels, ...(aiLabeled ? { aiLabeled: true } : {}) };
+          }),
           lastUpdated: Date.now(),
         },
       };

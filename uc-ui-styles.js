@@ -179,6 +179,27 @@ const UC_UI_STYLES = `
 .uc-footer .uc-btn--primary,
 .uc-footer .uc-btn--secondary { flex: 1; }
 
+/* ── Settings panel ── */
+.uc-settings-panel {
+  padding: .75rem;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.uc-settings-panel__title { font-weight: 700; margin-bottom: .5rem; color: var(--accent); font-size: 13px; }
+
+.uc-settings-panel__row { display: flex; flex-direction: column; gap: .25rem; margin-bottom: .35rem; }
+
+.uc-settings-panel__label { font-size: 11px; color: var(--muted); }
+
+.uc-settings-panel__hint { font-size: 10px; color: var(--muted); font-style: italic; margin-bottom: .5rem; }
+
+.uc-settings-panel__actions { display: flex; gap: .5rem; }
+.uc-settings-panel__actions .uc-btn { flex: 1; }
+
+.uc-settings-panel__status { font-size: 11px; color: var(--muted); margin-top: .35rem; min-height: 1em; }
+
 /* ── Manual form ── */
 .uc-manual-form {
   padding: .75rem;
